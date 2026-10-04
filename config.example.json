@@ -2,21 +2,64 @@
   "title": "Niven · NAS",
   "refresh_seconds": 20,
   "services": [
-    { "key": "mp", "icon": "🎬", "name": "MoviePilot", "port": 3000,
-      "lan": "http://192.168.31.220:3000", "wan": "http://m99m.synology.me:3000" },
-    { "key": "qbt", "icon": "⬇️", "name": "qBittorrent 主下载", "port": 8085,
-      "lan": "http://192.168.31.220:8085", "wan": "http://m99m.synology.me:8085" },
-    { "key": "qbt_send", "icon": "🚀", "name": "qBittorrent 刷流", "port": 8086,
-      "lan": "http://192.168.31.220:8086", "wan": "http://m99m.synology.me:8086" },
-    { "key": "emby", "icon": "🎞️", "name": "Emby", "port": 8096,
-      "lan": "http://192.168.31.220:8096", "wan": "http://m99m.synology.me:8096" },
-    { "key": "dsm", "icon": "🗄️", "name": "DSM 控制台", "port": 5000,
-      "lan": "http://192.168.31.220:5000", "wan": "http://m99m.synology.me:5000" }
+    {
+      "key": "mp",
+      "icon": "🎬",
+      "name": "MoviePilot",
+      "port": 3000,
+      "lan": "http://192.168.31.220:3000",
+      "wan": "http://m99m.synology.me:3000"
+    },
+    {
+      "key": "qbt",
+      "icon": "⬇️",
+      "name": "qBittorrent 主下载",
+      "port": 8085,
+      "lan": "http://192.168.31.220:8085",
+      "wan": "http://m99m.synology.me:8085"
+    },
+    {
+      "key": "qbt_send",
+      "icon": "🚀",
+      "name": "qBittorrent 刷流",
+      "port": 8086,
+      "lan": "http://192.168.31.220:8086",
+      "wan": "http://m99m.synology.me:8086"
+    },
+    {
+      "key": "emby",
+      "icon": "🎞️",
+      "name": "Emby",
+      "port": 8096,
+      "lan": "http://192.168.31.220:8096",
+      "wan": "http://m99m.synology.me:8096"
+    },
+    {
+      "key": "dsm",
+      "icon": "🗄️",
+      "name": "DSM 控制台",
+      "port": 5000,
+      "lan": "http://192.168.31.220:5000",
+      "wan": "http://m99m.synology.me:5000"
+    }
   ],
   "links": [
-    { "name": "M-Team · 馒头", "url": "https://kp.m-team.cc/" },
-    { "name": "Rousi Pro", "url": "https://rousi.pro/" },
-    { "name": "我不是矿神", "url": "https://imnks.com/" },
-    { "name": "Docker Hub", "url": "https://hub.docker.com/" }
-  ]
+    {
+      "name": "M-Team · 馒头",
+      "url": "https://kp.m-team.cc/"
+    },
+    {
+      "name": "Rousi Pro",
+      "url": "https://rousi.pro/"
+    },
+    {
+      "name": "我不是矿神",
+      "url": "https://imnks.com/"
+    },
+    {
+      "name": "Docker Hub",
+      "url": "https://hub.docker.com/"
+    }
+  ],
+  "port": 13002
 }

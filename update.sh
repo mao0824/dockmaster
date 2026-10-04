@@ -1,5 +1,6 @@
 #!/bin/sh
 # dockmaster 一键更新:拉取最新代码并重建容器
+[ -f config.json ] || { echo "首次运行:先 cp config.example.json config.json"; exit 1; }
 set -e
 cd "$(dirname "$0")"
 echo "== dockmaster 更新 =="

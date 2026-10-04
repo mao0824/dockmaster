@@ -13,6 +13,7 @@
 
 ```bash
 git clone https://github.com/mao0824/dockmaster.git
+cp config.example.json config.json   # 生成你自己的配置(更新不会覆盖)
 cd dockmaster
 cd dockmaster
 docker compose up -d --build
