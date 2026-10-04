@@ -14,7 +14,7 @@
 ```bash
 git clone https://github.com/mao0824/dockmaster.git
 cd dockmaster
-docker compose up -d
+docker compose up -d --build
 ```
 
 浏览器访问 `http://NAS_IP:13002`。

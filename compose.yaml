@@ -1,21 +1,14 @@
 name: dockmaster
 services:
   dockmaster:
-    image: python:3.12-alpine
+    build: .
+    image: mao0824/dockmaster:latest
     container_name: 13002-dockmaster
     hostname: 13002-dockmaster
     restart: unless-stopped
     network_mode: host
     volumes:
-      - /volume1/docker/dockmaster:/app
-    working_dir: /app
-    command: python3 -u app.py
-    healthcheck:
-      test: ["CMD-SHELL", "python3 -c \"import urllib.request;urllib.request.urlopen('http://127.0.0.1:13002/api/status',timeout=5)\""]
-      interval: 60s
-      timeout: 10s
-      retries: 3
-      start_period: 15s
+      - ./config.json:/app/config.json
     logging:
       driver: json-file
       options:
