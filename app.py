@@ -16,7 +16,7 @@ def load_config():
         with open(CONFIG, encoding="utf-8") as f:
             return json.load(f)
     except (OSError, ValueError):
-        return {"title": "NAS 导航", "services": [], "links": []}
+        return {"title": "NAS 导航", "port": 13002, "services": [], "links": []}
 
 
 def check(port) -> bool:
@@ -59,6 +59,8 @@ class Handler(http.server.BaseHTTPRequestHandler):
 
 
 socketserver.ThreadingTCPServer.allow_reuse_address = True
-with socketserver.ThreadingTCPServer(("0.0.0.0", 13002), Handler) as httpd:
-    print("dockmaster serving on :13002 (config-driven)", flush=True)
+cfg = load_config()
+PORT = int(cfg.get("port", 13002))
+with socketserver.ThreadingTCPServer(("0.0.0.0", PORT), Handler) as httpd:
+    print(f"dockmaster serving on :{PORT} (config-driven)", flush=True)
     httpd.serve_forever()
