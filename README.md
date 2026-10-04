@@ -1,4 +1,4 @@
-# nas-nav — 手搓群晖 NAS 导航页
+# dockmaster — 手搓群晖 NAS 导航页
 
 一个**单文件手搓**的 NAS 服务导航页:Docker 一键部署,自适应内网/公网,实时服务状态灯,零第三方依赖(python 标准库即可运行)。
 
@@ -12,8 +12,8 @@
 ## 快速开始
 
 ```bash
-git clone https://github.com/mao0824/nas-nav.git
-cd nas-nav
+git clone https://github.com/mao0824/dockmaster.git
+cd dockmaster
 docker compose up -d
 ```
 

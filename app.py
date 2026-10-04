@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""13002-nas-nav — NAS 导航页(配置驱动版:config.json 热加载,改配置刷新即生效)"""
+"""13002-dockmaster — NAS 导航页(配置驱动版:config.json 热加载,改配置刷新即生效)"""
 import http.server
 import json
 import os
@@ -60,5 +60,5 @@ class Handler(http.server.BaseHTTPRequestHandler):
 
 socketserver.ThreadingTCPServer.allow_reuse_address = True
 with socketserver.ThreadingTCPServer(("0.0.0.0", 13002), Handler) as httpd:
-    print("nas-nav serving on :13002 (config-driven)", flush=True)
+    print("dockmaster serving on :13002 (config-driven)", flush=True)
     httpd.serve_forever()

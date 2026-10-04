@@ -1,13 +1,13 @@
-name: nas-nav
+name: dockmaster
 services:
-  nas-nav:
+  dockmaster:
     image: python:3.12-alpine
-    container_name: 13002-nas-nav
-    hostname: 13002-nas-nav
+    container_name: 13002-dockmaster
+    hostname: 13002-dockmaster
     restart: unless-stopped
     network_mode: host
     volumes:
-      - /volume1/docker/nas-nav:/app
+      - /volume1/docker/dockmaster:/app
     working_dir: /app
     command: python3 -u app.py
     healthcheck:
