@@ -14,6 +14,7 @@
 ```bash
 git clone https://github.com/mao0824/dockmaster.git
 cd dockmaster
+cd dockmaster
 docker compose up -d --build
 ```
 
@@ -25,8 +26,8 @@ docker compose up -d --build
 
 | 文件 | 位置 | 作用 |
 |---|---|---|
-| `app.py` | `SERVICES` 列表 | 状态探测的端口(服务端) |
-| `index.html` | `SERVICES` 数组 | 卡片显示:图标/名称/内网地址/公网地址 |
+| `config.json` | 整份配置(服务/常用站/标题) | 状态探测的端口(服务端) |
+| `index.html` | 页面渲染(一般不用动) | 卡片显示:图标/名称/内网地址/公网地址 |
 
 内网/公网判定逻辑:访问域名是 `192.168.*`、`localhost`、`*.local` 时走内网地址,其余(公网域名)走公网地址。
 
