@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Niven · NAS 导航</title>
+<title>NAS 导航</title>
 <style>
   :root{
     --bg1:#0d1220; --bg2:#131a2b; --card:#1a2236; --card-hover:#222c47;
@@ -51,7 +51,7 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>Niven · NAS</h1>
+    <h1 id="title">NAS 导航</h1>
     <span class="badge" id="mode">检测网络中…</span>
   </header>
   <div class="sub" id="clock"></div>
@@ -60,70 +60,80 @@
   <div class="grid" id="grid"></div>
 
   <h2>常用站</h2>
-  <div class="links">
-    <a href="https://kp.m-team.cc/" target="_blank">M-Team · 馒头</a>
-    <a href="https://rousi.pro/" target="_blank">Rousi Pro</a>
-    <a href="https://imnks.com/" target="_blank">我不是矿神</a>
-    <a href="https://hub.docker.com/" target="_blank">Docker Hub</a>
-  </div>
+  <div class="links" id="links"></div>
 
-  <footer>13002-nas-nav · 手搓于 2026-10-04 · 状态每 20 秒刷新</footer>
+  <footer>13002-nas-nav · 状态由 NAS 服务端探测 · 配置文件热加载</footer>
 </div>
 
 <script>
-const SERVICES = [
-  {key:"mp",      icon:"🎬", name:"MoviePilot",      port:3000,
-   lan:"http://192.168.31.220:3000",  wan:"http://m99m.synology.me:3000"},
-  {key:"qbt",     icon:"⬇️", name:"qBittorrent 主下载", port:8085,
-   lan:"http://192.168.31.220:8085",  wan:null},
-  {key:"qbt_send",icon:"🚀", name:"qBittorrent 刷流",  port:8086,
-   lan:"http://192.168.31.220:8086",  wan:null},
-  {key:"emby",    icon:"🎞️", name:"Emby",            port:8096,
-   lan:"http://192.168.31.220:8096",  wan:"http://m99m.synology.me:8096"},
-  {key:"dsm",     icon:"🗄️", name:"DSM 控制台",       port:5000,
-   lan:"http://192.168.31.220:5000",  wan:"http://m99m.synology.me:5000"},
-];
-
 const h = location.hostname;
 const isWan = !(h === "192.168.31.220" || h === "localhost" || h === "127.0.0.1" || h.endsWith(".local"));
 const mode = isWan ? "wan" : "lan";
-const base = s => (mode === "wan" && s.wan) ? s.wan : s.lan;
 
 document.getElementById("mode").textContent = mode === "wan" ? "公网模式" : "内网模式";
 document.getElementById("mode").classList.toggle("wan", isWan);
 
-const grid = document.getElementById("grid");
-for (const s of SERVICES) {
-  const url = base(s);
-  const off = (mode === "wan" && !s.wan);
-  const a = document.createElement("a");
-  a.className = "card" + (off ? " off" : "");
-  a.href = off ? "javascript:void(0)" : url;
-  if (!off) a.target = "_blank";
-  a.innerHTML = `
-    <div class="ico">${s.icon}</div>
-    <div class="nm">${s.name}</div>
-    <div class="hp">${off ? "仅内网可用" : url.replace(/^https?:\/\//, "")}</div>
-    <div class="st" id="st-${s.key}"><span class="dot"></span>检测中…</div>
-    ${off ? '<div class="lanonly">在外网需先开放端口</div>' : ""}
-  `;
-  grid.appendChild(a);
+let SERVICES = [];
+async function loadConfig() {
+  const res = await fetch("/api/config", {cache: "no-store"});
+  const cfg = await res.json();
+  document.title = cfg.title || "NAS 导航";
+  document.getElementById("title").textContent = cfg.title || "NAS 导航";
+  SERVICES = cfg.services || [];
+  renderCards();
+  renderLinks(cfg.links || []);
+  refresh();
+}
+function base(s) { return (mode === "wan" && s.wan) ? s.wan : s.lan; }
+function renderCards() {
+  const grid = document.getElementById("grid");
+  grid.innerHTML = "";
+  for (const s of SERVICES) {
+    const url = base(s);
+    const off = (mode === "wan" && !s.wan);
+    const a = document.createElement("a");
+    a.className = "card" + (off ? " off" : "");
+    a.href = off ? "javascript:void(0)" : url;
+    if (!off) a.target = "_blank";
+    a.innerHTML = `
+      <div class="ico">${s.icon || "🔗"}</div>
+      <div class="nm">${s.name}</div>
+      <div class="hp">${off ? "仅内网可用" : url.replace(/^https?:\/\//, "")}</div>
+      <div class="st" id="st-${s.key}"><span class="dot"></span>检测中…</div>
+      ${off ? '<div class="lanonly">在外网需先开放端口</div>' : ""}
+    `;
+    grid.appendChild(a);
+  }
+}
+function renderLinks(links) {
+  const box = document.getElementById("links");
+  box.innerHTML = "";
+  for (const l of links) {
+    const a = document.createElement("a");
+    a.href = l.url; a.target = "_blank"; a.textContent = l.name;
+    box.appendChild(a);
+  }
 }
 
+let timer = null;
 async function refresh() {
   try {
     const res = await fetch("/api/status", {cache: "no-store"});
     const st = await res.json();
     for (const s of SERVICES) {
       const el = document.getElementById("st-" + s.key);
+      if (!el) continue;
       const ok = st[s.key];
       el.innerHTML = `<span class="dot ${ok ? "ok" : "bad"}"></span>${ok ? "在线" : "离线"}`;
       el.className = "st " + (ok ? "ok" : "bad");
     }
   } catch (e) { /* 静默重试 */ }
 }
-refresh();
-setInterval(refresh, 20000);
+
+loadConfig().then(() => {
+  clearInterval(timer);
+  timer = setInterval(refresh, 20000);
+});
 
 function tick() {
   const d = new Date();
