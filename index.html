@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Niven · NAS 导航</title>
+<style>
+  :root{
+    --bg1:#0d1220; --bg2:#131a2b; --card:#1a2236; --card-hover:#222c47;
+    --text:#e8ecf4; --sub:#8b94a8; --ok:#3ddc84; --bad:#ff5c6c; --lan:#6ea8fe; --line:#2a3450;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    min-height:100vh;background:linear-gradient(160deg,var(--bg1),var(--bg2));
+    color:var(--text);font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+    padding:32px 20px 60px;
+  }
+  .wrap{max-width:980px;margin:0 auto}
+  header{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:6px}
+  h1{font-size:26px;letter-spacing:1px}
+  .badge{font-size:12px;padding:3px 10px;border-radius:20px;border:1px solid var(--line);color:var(--sub)}
+  .badge.wan{color:#ffb86c;border-color:#5a4a2f}
+  .sub{color:var(--sub);font-size:13px;margin-bottom:26px}
+  h2{font-size:14px;color:var(--sub);letter-spacing:2px;margin:26px 0 12px;font-weight:600}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px}
+  a.card{
+    display:block;text-decoration:none;color:var(--text);background:var(--card);
+    border:1px solid var(--line);border-radius:14px;padding:18px 16px;
+    transition:transform .15s,background .15s,border-color .15s;
+  }
+  a.card:hover{background:var(--card-hover);border-color:#3d4a70;transform:translateY(-3px)}
+  a.card.off{opacity:.45;pointer-events:none}
+  .ico{font-size:28px;line-height:1}
+  .nm{font-size:16px;font-weight:600;margin-top:10px}
+  .hp{font-size:12px;color:var(--sub);margin-top:4px;font-family:ui-monospace,monospace}
+  .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;background:var(--sub)}
+  .dot.ok{background:var(--ok);box-shadow:0 0 6px var(--ok)}
+  .dot.bad{background:var(--bad)}
+  .st{font-size:12px;margin-top:10px;color:var(--sub)}
+  .st.ok{color:var(--ok)} .st.bad{color:var(--bad)}
+  .lanonly{font-size:11px;color:#ffb86c;margin-top:6px}
+  .links{display:flex;flex-wrap:wrap;gap:10px}
+  .links a{
+    color:var(--text);text-decoration:none;font-size:13px;background:var(--card);
+    border:1px solid var(--line);border-radius:10px;padding:8px 14px;transition:background .15s;
+  }
+  .links a:hover{background:var(--card-hover)}
+  footer{margin-top:44px;color:#525c72;font-size:11px;text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Niven · NAS</h1>
+    <span class="badge" id="mode">检测网络中…</span>
+  </header>
+  <div class="sub" id="clock"></div>
+
+  <h2>服务</h2>
+  <div class="grid" id="grid"></div>
+
+  <h2>常用站</h2>
+  <div class="links">
+    <a href="https://kp.m-team.cc/" target="_blank">M-Team · 馒头</a>
+    <a href="https://rousi.pro/" target="_blank">Rousi Pro</a>
+    <a href="https://imnks.com/" target="_blank">我不是矿神</a>
+    <a href="https://hub.docker.com/" target="_blank">Docker Hub</a>
+  </div>
+
+  <footer>13002-nas-nav · 手搓于 2026-10-04 · 状态每 20 秒刷新</footer>
+</div>
+
+<script>
+const SERVICES = [
+  {key:"mp",      icon:"🎬", name:"MoviePilot",      port:3000,
+   lan:"http://192.168.31.220:3000",  wan:"http://m99m.synology.me:3000"},
+  {key:"qbt",     icon:"⬇️", name:"qBittorrent 主下载", port:8085,
+   lan:"http://192.168.31.220:8085",  wan:null},
+  {key:"qbt_send",icon:"🚀", name:"qBittorrent 刷流",  port:8086,
+   lan:"http://192.168.31.220:8086",  wan:null},
+  {key:"emby",    icon:"🎞️", name:"Emby",            port:8096,
+   lan:"http://192.168.31.220:8096",  wan:"http://m99m.synology.me:8096"},
+  {key:"dsm",     icon:"🗄️", name:"DSM 控制台",       port:5000,
+   lan:"http://192.168.31.220:5000",  wan:"http://m99m.synology.me:5000"},
+];
+
+const h = location.hostname;
+const isWan = !(h === "192.168.31.220" || h === "localhost" || h === "127.0.0.1" || h.endsWith(".local"));
+const mode = isWan ? "wan" : "lan";
+const base = s => (mode === "wan" && s.wan) ? s.wan : s.lan;
+
+document.getElementById("mode").textContent = mode === "wan" ? "公网模式" : "内网模式";
+document.getElementById("mode").classList.toggle("wan", isWan);
+
+const grid = document.getElementById("grid");
+for (const s of SERVICES) {
+  const url = base(s);
+  const off = (mode === "wan" && !s.wan);
+  const a = document.createElement("a");
+  a.className = "card" + (off ? " off" : "");
+  a.href = off ? "javascript:void(0)" : url;
+  if (!off) a.target = "_blank";
+  a.innerHTML = `
+    <div class="ico">${s.icon}</div>
+    <div class="nm">${s.name}</div>
+    <div class="hp">${off ? "仅内网可用" : url.replace(/^https?:\/\//, "")}</div>
+    <div class="st" id="st-${s.key}"><span class="dot"></span>检测中…</div>
+    ${off ? '<div class="lanonly">在外网需先开放端口</div>' : ""}
+  `;
+  grid.appendChild(a);
+}
+
+async function refresh() {
+  try {
+    const res = await fetch("/api/status", {cache: "no-store"});
+    const st = await res.json();
+    for (const s of SERVICES) {
+      const el = document.getElementById("st-" + s.key);
+      const ok = st[s.key];
+      el.innerHTML = `<span class="dot ${ok ? "ok" : "bad"}"></span>${ok ? "在线" : "离线"}`;
+      el.className = "st " + (ok ? "ok" : "bad");
+    }
+  } catch (e) { /* 静默重试 */ }
+}
+refresh();
+setInterval(refresh, 20000);
+
+function tick() {
+  const d = new Date();
+  document.getElementById("clock").textContent =
+    d.toLocaleDateString("zh-CN") + " " + d.toLocaleTimeString("zh-CN");
+}
+tick(); setInterval(tick, 1000);
+</script>
+</body>
+</html>
