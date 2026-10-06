@@ -61,5 +61,19 @@
       "url": "https://hub.docker.com/"
     }
   ],
-  "port": 13002
+  "port": 13002,
+  "qbt_stats": [
+    {
+      "key": "qbt",
+      "url": "http://127.0.0.1:8085",
+      "user": "admin",
+      "pass": "Mm142580.."
+    },
+    {
+      "key": "qbt_send",
+      "url": "http://NAS_IP:8086",
+      "user": "admin",
+      "pass": "你的密码"
+    }
+  ]
 }

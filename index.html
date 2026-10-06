@@ -38,6 +38,7 @@
   .dot.bad{background:var(--bad)}
   .st{font-size:12px;margin-top:10px;color:var(--sub)}
   .st.ok{color:var(--ok)} .st.bad{color:var(--bad)}
+  .spd{font-size:12px;color:var(--lan);margin-top:6px;font-family:ui-monospace,monospace}
   .lanonly{font-size:11px;color:#ffb86c;margin-top:6px}
   .searchrow{display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap}
   .searchrow input{
@@ -118,6 +119,7 @@ function renderCards() {
       <div class="nm">${s.name}</div>
       <div class="hp">${off ? "仅内网可用" : url.replace(/^https?:\/\//, "")}</div>
       <div class="st" id="st-${s.key}"><span class="dot"></span>检测中…</div>
+    <div class="spd" id="spd-${s.key}"></div>
       ${off ? '<div class="lanonly">在外网需先开放端口</div>' : ""}
     `;
     grid.appendChild(a);
@@ -162,13 +164,20 @@ let timer = null;
 async function refresh() {
   try {
     const res = await fetch("/api/status", {cache: "no-store"});
-    const st = await res.json();
+    const d = await res.json();
+    const st = d.status || {};
+    const sp = d.stats || {};
     for (const s of SERVICES) {
       const el = document.getElementById("st-" + s.key);
       if (!el) continue;
       const ok = st[s.key];
       el.innerHTML = `<span class="dot ${ok ? "ok" : "bad"}"></span>${ok ? "在线" : "离线"}`;
       el.className = "st " + (ok ? "ok" : "bad");
+      const spd = document.getElementById("spd-" + s.key);
+      if (spd) {
+        const v = sp[s.key];
+        spd.textContent = v ? `↓ ${v.down.toFixed(2)} · ↑ ${v.up.toFixed(2)} MB/s` : "";
+      }
     }
   } catch (e) { /* 静默重试 */ }
 }

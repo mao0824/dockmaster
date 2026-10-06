@@ -5,6 +5,10 @@ import json
 import os
 import socket
 import socketserver
+import time
+import urllib.parse
+import urllib.request
+from http import cookiejar
 
 BASE = os.path.dirname(os.path.abspath(__file__))
 CONFIG = os.path.join(BASE, "config.json")
@@ -28,6 +32,38 @@ def check(port) -> bool:
         return False
 
 
+_stats_cache = {"ts": 0.0, "data": {}}
+
+
+def qbt_stats(cfg):
+    """拉取各 qbt 实例的全局上下行速度(MB/s),10 秒缓存避免频繁登录。"""
+    now = time.time()
+    if now - _stats_cache["ts"] < 10:
+        return _stats_cache["data"]
+    out = {}
+    for inst in cfg.get("qbt_stats", []):
+        key = inst.get("key")
+        if not key:
+            continue
+        try:
+            cj = cookiejar.CookieJar()
+            op = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(cj))
+            login = urllib.parse.urlencode(
+                {"username": inst.get("user", ""), "password": inst.get("pass", "")}
+            ).encode()
+            op.open(inst["url"] + "/api/v2/auth/login", login, timeout=4)
+            info = json.load(op.open(inst["url"] + "/api/v2/transfer/info", timeout=4))
+            out[key] = {
+                "up": round(info.get("up_info_speed", 0) / 1e6, 2),
+                "down": round(info.get("dl_info_speed", 0) / 1e6, 2),
+            }
+        except Exception:
+            out[key] = None
+    _stats_cache["ts"] = now
+    _stats_cache["data"] = out
+    return out
+
+
 class Handler(http.server.BaseHTTPRequestHandler):
     def _send(self, body: bytes, ctype: str, code: int = 200):
         self.send_response(code)
@@ -42,9 +78,8 @@ class Handler(http.server.BaseHTTPRequestHandler):
             self._send(json.dumps(cfg, ensure_ascii=False).encode(), "application/json; charset=utf-8")
         elif self.path.startswith("/api/status"):
             cfg = load_config()
-            body = json.dumps(
-                {s.get("key"): check(s.get("port")) for s in cfg.get("services", []) if s.get("key")}
-            ).encode()
+            statuses = {s.get("key"): check(s.get("port")) for s in cfg.get("services", []) if s.get("key")}
+            body = json.dumps({"status": statuses, "stats": qbt_stats(cfg)}, ensure_ascii=False).encode()
             self._send(body, "application/json")
         elif self.path in ("/", "/index.html"):
             try:
