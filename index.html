@@ -39,6 +39,17 @@
   .st{font-size:12px;margin-top:10px;color:var(--sub)}
   .st.ok{color:var(--ok)} .st.bad{color:var(--bad)}
   .lanonly{font-size:11px;color:#ffb86c;margin-top:6px}
+  .searchrow{display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+  .searchrow input{
+    flex:1;min-width:220px;background:var(--card);border:1px solid var(--line);
+    border-radius:10px;padding:10px 14px;color:var(--text);font-size:14px;outline:none;
+    transition:border-color .15s;
+  }
+  .searchrow input:focus{border-color:#3d4a70}
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{background:var(--card);border:1px solid var(--line);border-radius:20px;
+    padding:6px 14px;color:var(--text);font-size:13px;cursor:pointer;transition:background .15s}
+  .chip:hover{background:var(--card-hover);border-color:#3d4a70}
   .links{display:flex;flex-wrap:wrap;gap:10px}
   .links a{
     color:var(--text);text-decoration:none;font-size:13px;background:var(--card);
@@ -58,6 +69,12 @@
 
   <h2>服务</h2>
   <div class="grid" id="grid"></div>
+
+  <h2>搜索</h2>
+  <div class="searchrow">
+    <input id="kw" placeholder="输入关键词,点目标开搜…" autocomplete="off">
+  </div>
+  <div class="chips" id="searchchips"></div>
 
   <h2>常用站</h2>
   <div class="links" id="links"></div>
@@ -82,6 +99,7 @@ async function loadConfig() {
   SERVICES = cfg.services || [];
   renderCards();
   renderLinks(cfg.links || []);
+  renderSearch(cfg.search || {});
   refresh();
 }
 function base(s) { return (mode === "wan" && s.wan) ? s.wan : s.lan; }
@@ -105,6 +123,31 @@ function renderCards() {
     grid.appendChild(a);
   }
 }
+function renderSearch(sc) {
+  const box = document.getElementById("searchchips");
+  const kw = document.getElementById("kw");
+  if (!sc.targets || !sc.targets.length) { box.style.display = "none"; return; }
+  kw.placeholder = sc.placeholder || "输入关键词…";
+  box.innerHTML = "";
+  const go = t => {
+    const k = kw.value.trim();
+    if (!k) { kw.focus(); return; }
+    window.open(t.url.replace("{kw}", encodeURIComponent(k)), "_blank");
+  };
+  for (const t of sc.targets) {
+    const b = document.createElement("button");
+    b.className = "chip"; b.textContent = t.name;
+    b.onclick = () => go(t);
+    box.appendChild(b);
+  }
+  kw.onkeydown = e => {
+    if (e.key === "Enter") {
+      const d = sc.targets.find(t => t.key === (sc.default || "douban")) || sc.targets[0];
+      if (d) go(d);
+    }
+  };
+}
+
 function renderLinks(links) {
   const box = document.getElementById("links");
   box.innerHTML = "";
